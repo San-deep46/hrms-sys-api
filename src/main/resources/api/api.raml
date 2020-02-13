@@ -1,0 +1,45 @@
+#%RAML 1.0
+title: Sample API
+
+/test:
+  post:
+    body:
+      application/json:
+      
+    responses:
+      201:
+        body:
+          application/json:
+          
+/camelcase:
+   get:
+     responses:
+       201: 
+         body:
+           application/json:
+          
+/onmatch:
+   get:
+     responses:
+       201: 
+         body:
+           application/json:
+           
+/allrecords:
+   get:
+     responses:
+       201: 
+         body:
+           application/json:
+
+/uri:
+  /{uriid}:
+      uriParameters:
+        uriid:
+          required: true  
+      get:
+        responses:
+          201: 
+            body:
+              application/json:
+                    

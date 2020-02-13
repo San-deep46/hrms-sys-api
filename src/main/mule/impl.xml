@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+
+
+<configuration doc:name="Configuration">
+
+	<expression-language>
+
+		<global-functions>
+
+    def toCamelCase(string) {
+
+    return org.apache.commons.text.CaseUtils.toCamelCase(string,true)
+
+    }
+
+    def addition(a,b) {
+
+    return a + b
+
+    }
+
+   </global-functions>
+
+	</expression-language>
+
+</configuration>
+
+	<flow name="createEmployee" doc:id="634090cf-c094-43ab-92ad-dd6e2d8b785b" >
+
+		<ee:transform doc:name="String" doc:id="d1bba698-6ffd-4795-8953-03b77e85c9fa" >
+
+			<ee:message >
+
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/json
+
+---
+
+'Jan Doe employee profile is created in HRMS System.']]></ee:set-payload>
+
+			</ee:message>
+
+		</ee:transform>
+
+	</flow>
+
+	<flow name="camelCase" doc:id="577e6926-8e08-4b53-85a3-0db162b24459">
+
+		<ee:transform doc:name="Transform Message" doc:id="61bcdebe-0024-4ed6-91f0-e3b7ccd19981">
+
+			<ee:message>
+
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+---
+
+toCamelCase(lookup("createEmployee", payload))]]></ee:set-payload>
+
+			</ee:message>
+
+		</ee:transform>
+
+	</flow>
+	<flow name="on-mataching-ID's" doc:id="32a736e5-a4f8-4b7a-8a1b-3467211be6c5" >
+
+		<ee:transform doc:name="input1" doc:id="f81f293f-d198-4e44-9adb-77f08ec99d63" >
+
+			<ee:message >
+
+			</ee:message>
+
+			<ee:variables >
+
+				<ee:set-variable variableName="variable1" ><![CDATA[%dw 2.0
+
+output application/java
+
+---
+
+{
+
+  "employee": [
+
+    {
+
+      "id": "A007",
+
+      "first_name": "Jan",
+
+      "last_name": "Doe"
+
+    },
+
+    {
+
+      "id": "A008",
+
+      "first_name": "Ron",
+
+      "last_name": "David"
+
+    },
+
+    {
+
+      "id": "A009",
+
+      "first_name": "Jane",
+
+      "last_name": "Kane"
+
+    },
+
+    {
+
+      "id": "A010",
+
+      "first_name": "Marsh",
+
+      "last_name": "Megan"
+
+    },
+
+    {
+
+      "id": "A011",
+
+      "first_name": "Kelly",
+
+      "last_name": "Mitch"
+
+    },
+
+    {
+
+      "id": "A012",
+
+      "first_name": "Chris",
+
+      "last_name": "Vaste"
+
+    }
+
+  ]
+
+}]]></ee:set-variable>
+
+			</ee:variables>
+
+		</ee:transform>
+
+		<ee:transform doc:name="input2" doc:id="011d3fe9-f85c-4f66-a82a-aa19156fa482" >
+
+			<ee:message >
+
+			</ee:message>
+
+			<ee:variables >
+
+				<ee:set-variable variableName="input2" ><![CDATA[%dw 2.0
+
+output application/java
+
+---
+
+{
+
+  "scoreBoard": [
+
+    {
+
+      "id": "A007",
+
+      "subjects": [
+
+        "Maths",
+
+        "English",
+
+        "Arts",
+
+        "Drawimgs"
+
+      ],
+
+      "score": [
+
+        80,
+
+        75,
+
+        89,
+
+        100
+
+      ]
+
+    },
+
+    {
+
+      "id": "A008",
+
+      "subjects": [
+
+        "Maths",
+
+        "English",
+
+        "Arts",
+
+        "Drawimgs"
+
+      ],
+
+      "score": [
+
+        70,
+
+        85,
+
+        69,
+
+        90
+
+      ]
+
+    },
+
+    {
+
+      "id": "A021",
+
+      "subjects": [
+
+        "Maths",
+
+        "English",
+
+        "Arts",
+
+        "Drawimgs"
+
+      ],
+
+      "score": [
+
+        90,
+
+        87,
+
+        77,
+
+        95
+
+      ]
+
+    }
+
+  ]
+
+}]]></ee:set-variable>
+
+			</ee:variables>
+
+		</ee:transform>
+
+		<ee:transform doc:name="4.1" doc:id="cec7a037-f9fb-472c-a36f-924be245e10e">
+
+			<ee:message>
+
+				<ee:set-payload><![CDATA[%dw 2.0
+
+output application/json
+
+var inputTransorm =    (vars.input2.scoreBoard map (item,index) -> {
+
+ 	id : item.id,
+
+	 (test : zip(item.subjects,item.score))
+
+	
+
+}) groupBy $.id 
+
+---
+
+
+
+certificate : vars.variable1.employee map {
+
+
+
+id : $.id,
+
+firstName : $.first_name,
+
+LastName : $.last_name,
+
+MarksBySubjectWise : {
+
+	( (flatten (inputTransorm[$.id].test)) map(marks,index)-> {
+
+		(marks[0]) : marks[1]
+
+	})
+
+}
+
+}
+
+]]></ee:set-payload>
+
+			</ee:message>
+
+		</ee:transform>
+
+	</flow>
+	<flow name="allrecords" doc:id="a97b4b56-5a17-4437-80ce-aceec3a196fc" >
+		<ee:transform doc:name="input1" doc:id="9631241c-593c-4803-8d28-98e69eee7e60" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="variable1" ><![CDATA[%dw 2.0
+
+output application/java
+
+---
+
+{
+
+  "employee": [
+
+    {
+
+      "id": "A007",
+
+      "first_name": "Jan",
+
+      "last_name": "Doe"
+
+    },
+
+    {
+
+      "id": "A008",
+
+      "first_name": "Ron",
+
+      "last_name": "David"
+
+    },
+
+    {
+
+      "id": "A009",
+
+      "first_name": "Jane",
+
+      "last_name": "Kane"
+
+    },
+
+    {
+
+      "id": "A010",
+
+      "first_name": "Marsh",
+
+      "last_name": "Megan"
+
+    },
+
+    {
+
+      "id": "A011",
+
+      "first_name": "Kelly",
+
+      "last_name": "Mitch"
+
+    },
+
+    {
+
+      "id": "A012",
+
+      "first_name": "Chris",
+
+      "last_name": "Vaste"
+
+    }
+
+  ]
+
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="input2" doc:id="e5f188a2-a845-480a-8b70-6d7d39b7d2ba" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="input2" ><![CDATA[%dw 2.0
+
+output application/java
+
+---
+
+{
+
+  "scoreBoard": [
+
+    {
+
+      "id": "A007",
+
+      "subjects": [
+
+        "Maths",
+
+        "English",
+
+        "Arts",
+
+        "Drawimgs"
+
+      ],
+
+      "score": [
+
+        80,
+
+        75,
+
+        89,
+
+        100
+
+      ]
+
+    },
+
+    {
+
+      "id": "A008",
+
+      "subjects": [
+
+        "Maths",
+
+        "English",
+
+        "Arts",
+
+        "Drawimgs"
+
+      ],
+
+      "score": [
+
+        70,
+
+        85,
+
+        69,
+
+        90
+
+      ]
+
+    },
+
+    {
+
+      "id": "A021",
+
+      "subjects": [
+
+        "Maths",
+
+        "English",
+
+        "Arts",
+
+        "Drawimgs"
+
+      ],
+
+      "score": [
+
+        90,
+
+        87,
+
+        77,
+
+        95
+
+      ]
+
+    }
+
+  ]
+
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="4.2" doc:id="c92f40e7-d0ca-448e-b199-5dcabe22ec91" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+var inputTransorm =    (vars.input2.scoreBoard map (item,index) -> {
+
+ 	id : item.id,
+
+	 (test : zip(item.subjects,item.score))
+
+	
+
+}) groupBy $.id 
+output application/json
+---
+
+flatten(vars.variable1.employee map (firstInputValue) -> using (id = firstInputValue.id)
+  {
+  	id :id,
+  	firstname : firstInputValue.first_name,
+  	lastname: firstInputValue.last_name,
+( (flatten (inputTransorm[firstInputValue.id].test)) map(marks,index)-> {
+	(marks[0]) : marks[1]
+
+	})
+
+
+  })]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="list-of-natural-N" doc:id="04f80572-08c7-4529-87fe-69f7e2a48e4d" >
+		<set-payload value="[1,2,3,4,5,6,7,8,9,10]" doc:name="Set Payload" doc:id="9255c835-fac2-494e-a1ee-c0c332053782" />
+	</flow>
+
+</mule>
